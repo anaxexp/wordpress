@@ -20,6 +20,11 @@ RUN set -ex \
     && mv wp-cli.phar /usr/local/bin/wp \
     && wp --info --allow-root
 
+# Copy the WordPress skeleton from this repo into the container
+# This includes any themes and/or plugins we've added to the content/themes and content/plugins directories.
+COPY /var/www/html /var/www/html
+RUN chown -R www-data:www-data /var/www/html/*
+
 # Install WordPress via wp-cli & move the default themes to our content dir
 # Releases at https://core.svn.wordpress.org/tags/ and https://wordpress.org/news/category/releases/
 ENV WORDPRESS_VERSION 4.9.8
