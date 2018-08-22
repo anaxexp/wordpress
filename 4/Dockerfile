@@ -12,6 +12,35 @@ ENV WP_VER="${WP_VER}" \
     APP_NAME="WordPress 4"
 
 USER root
+# Install wp-cli, http://wp-cli.org
+ENV WP_CLI_CONFIG_PATH /var/www/html/wp-cli.yml
+RUN set -ex \
+    && curl --retry 7 --fail -Ls -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
+    && chmod +x wp-cli.phar \
+    && mv wp-cli.phar /usr/local/bin/wp \
+    && wp --info --allow-root
+
+# Install WordPress via wp-cli & move the default themes to our content dir
+# Releases at https://core.svn.wordpress.org/tags/ and https://wordpress.org/news/category/releases/
+ENV WORDPRESS_VERSION 4.9.8
+RUN set -ex \
+    && wp --allow-root core download --version=${WORDPRESS_VERSION} \
+    && mv /var/www/html/wordpress/wp-content/themes/* /var/www/html/content/themes/
+
+# Install HyperDB, https://wordpress.org/plugins/hyperdb
+# Releases at https://wordpress.org/plugins/hyperdb/developers/ , though no SHA1 fingerprints are published
+RUN set -ex \
+    && export HYPERDB_VERSION=1.1 \
+    && curl --retry 7 --fail -Ls -o /var/www/html/hyperdb.zip https://downloads.wordpress.org/plugin/hyperdb.${HYPERDB_VERSION}.zip \
+    && unzip hyperdb.zip \
+    && chown -R www-data:www-data /var/www/html/hyperdb \
+    && mv hyperdb/db.php /var/www/html/content/. \
+    && rm -rf /var/www/html/hyperdb.zip /var/www/html/hyperdb \
+    && touch /var/www/html/content/db-config.php
+
+# Install ztollman's object-cache.php or object caching to memcached
+RUN set -ex \
+    && curl --retry 7 --fail -Ls -o /var/www/html/content/object-cache.php https://raw.githubusercontent.com/tollmanz/wordpress-pecl-memcached-object-cache/master/object-cache.php
 
 RUN set -ex; \
     \
