@@ -11,8 +11,6 @@ WORKSPACE ?= $(shell pwd)
 
 namespace ?= anaxexp
 tag := branch-$(shell basename $(GIT_BRANCH))
-imageWordpress := $(namespace)/wordpress
-imageNginx := $(namespace)/nginx
 
 #dockerLocal := DOCKER_HOST= DOCKER_TLS_VERIFY= DOCKER_CERT_PATH= docker
 dockerLocal := docker
@@ -28,7 +26,7 @@ WP_VER_MAJOR ?= $(shell echo "${WP_VER}" | grep -oE '^[0-9]+')
 PHP_VER ?= 7.2
 BASE_IMAGE_TAG = $(PHP_VER)
 
-REPO = anaxexp/wordpress
+REPO := $(namespace)/wordpress
 NAME = wordpress-$(WP_VER_MAJOR)-$(PHP_VER)
 
 TAG ?= $(WP_VER_MAJOR)-$(PHP_VER)
@@ -49,7 +47,7 @@ help:
 
 
 build:
-	$(dockerLocal) build -t=$(imageWordpress):$(tag) \
+	$(dockerLocal) build -t=$(REPO):$(TAG) \
 		--build-arg BASE_IMAGE_TAG=$(BASE_IMAGE_TAG) \
 		--build-arg WP_VER=$(WP_VER) \
 		--build-arg WP_SHA1=$(WP_SHA1) \
@@ -61,20 +59,16 @@ test:
 
 ## Push the current application container images to the Docker Hub
 push:
-	$(dockerLocal) push $(imageWordpress):$(tag)
-	$(dockerLocal) push $(imageNginx):$(tag)
+	$(dockerLocal) push $(REPO):$(TAG)
 
 ## Tag the current images as 'latest'
 tag:
-	$(dockerLocal) tag $(imageWordpress):$(tag) $(imageWordpress):latest
-	$(dockerLocal) tag $(imageNginx):$(tag) $(imageNginx):latest
+	$(dockerLocal) tag $(REPO):$(tag) $(REPO):$(TAG) $(REPO):latest
 
 ## Push latest tag(s) to the Docker Hub
 ship: tag
-	$(dockerLocal) push $(imageWordpress):$(tag)
-	$(dockerLocal) push $(imageWordpress):latest
-	$(dockerLocal) push $(imageNginx):$(tag)
-	$(dockerLocal) push $(imageNginx):latest
+	$(dockerLocal) push $(REPO):$(TAG)
+	$(dockerLocal) push $(REPO):latest
 
 shell:
 	docker run --rm --name $(NAME) -i -t $(PORTS) $(VOLUMES) $(ENV) $(REPO):$(TAG) /bin/bash
@@ -104,8 +98,7 @@ release: build push
 
 ## Pull the container images from the Docker Hub
 pull:
-	$(dockerLocal) pull $(imageWordpress):$(tag)
-	$(dockerLocal) pull $(imageNginx):$(tag)
+	$(dockerLocal) pull $(REPO):$(TAG)
 
 ## Print environment for build debugging
 debug:
@@ -113,9 +106,8 @@ debug:
 	@echo GIT_COMMIT=$(GIT_COMMIT)
 	@echo GIT_BRANCH=$(GIT_BRANCH)
 	@echo namespace=$(namespace)
-	@echo tag=$(tag)
-	@echo imageWordpress=$(imageWordpress)
-	@echo imageNginx=$(imageNginx)
+	@echo REPO=$(REPO)
+	@echo TAG=$(TAG)
 
 # -------------------------------------------------------
 # helper functions for testing if variables are defined
