@@ -56,32 +56,34 @@ RUN set -ex \
     && mv wp-cli.phar /usr/local/bin/wp \
     && wp --info --allow-root
 
-# Copy the WordPress skeleton from this repo into the container
-# This includes any themes and/or plugins we've added to the content/themes and content/plugins directories.
-COPY /var/www/html /var/www/html
-RUN chown -R www-data:www-data /var/www/html/*
-
-# Install WordPress via wp-cli & move the default themes to our content dir
-# Releases at https://core.svn.wordpress.org/tags/ and https://wordpress.org/news/category/releases/
-ENV WORDPRESS_VERSION 4.9.8
-RUN set -ex \
-    && wp --allow-root core download --version=${WORDPRESS_VERSION} \
-    && mv /var/www/html/wordpress/wp-content/themes/* /var/www/html/content/themes/
-
 # Install HyperDB, https://wordpress.org/plugins/hyperdb
 # Releases at https://wordpress.org/plugins/hyperdb/developers/ , though no SHA1 fingerprints are published
+ENV HYPERDB_VERSION=1.1
 RUN set -ex \
-    && export HYPERDB_VERSION=1.1 \
-    && curl --retry 7 --fail -Ls -o /var/www/html/hyperdb.zip https://downloads.wordpress.org/plugin/hyperdb.${HYPERDB_VERSION}.zip \
+    && curl --retry 7 --fail -Ls -o /usr/src/hyperdb.zip https://downloads.wordpress.org/plugin/hyperdb.${HYPERDB_VERSION}.zip \
+    && cd /usr/src \
     && unzip hyperdb.zip \
-    && chown -R www-data:www-data /var/www/html/hyperdb \
-    && mv hyperdb/db.php /var/www/html/content/. \
-    && rm -rf /var/www/html/hyperdb.zip /var/www/html/hyperdb \
-    && touch /var/www/html/content/db-config.php
+    && chown -R www-data:www-data /usr/src/hyperdb \
+    && mv hyperdb/db.php /usr/src/wordpress/wp-content/. \
+    && rm -rf /usr/src/hyperdb.zip /usr/src/hyperdb \
+    && touch /usr/src/wordpress/wp-content/db-config.php
 
 # Install ztollman's object-cache.php or object caching to memcached
 RUN set -ex \
-    && curl --retry 7 --fail -Ls -o /var/www/html/content/object-cache.php https://raw.githubusercontent.com/tollmanz/wordpress-pecl-memcached-object-cache/master/object-cache.php
+    && su-exec anaxexp curl --retry 7 --fail -Ls -o /usr/src/wordpress/wp-content/object-cache.php https://raw.githubusercontent.com/tollmanz/wordpress-pecl-memcached-object-cache/master/object-cache.php
+
+
+# Copy the WordPress skeleton from this repo into the container
+# This includes any themes and/or plugins we've added to the content/themes and content/plugins directories.
+COPY /usr/src/wordpress /usr/src/wordpress
+RUN chown -R www-data:www-data /usr/src/wordpress/*
+
+# Install WordPress via wp-cli & move the default themes to our content dir
+# Releases at https://core.svn.wordpress.org/tags/ and https://wordpress.org/news/category/releases/
+#ENV WORDPRESS_VERSION 4.9.8
+#RUN set -ex \
+#    && wp --allow-root core download --version=${WORDPRESS_VERSION} \
+#    && mv /var/www/html/wordpress/wp-content/themes/* /var/www/html/content/themes/
 
 
 USER anaxexp
