@@ -5,6 +5,9 @@ FROM anaxexp/wordpress-php:${BASE_IMAGE_TAG}
 ARG WP_VER
 ARG WP_SHA1
 ARG WP_MD5
+ARG APP_NAME
+ARG HYPERDB_VERSION
+ARG WP_CLI_CONFIG_PATH
 
 ENV WP_VER="${WP_VER}" \
     WP_SHA1="${WP_SHA1}" \
@@ -17,7 +20,7 @@ USER root
 
 RUN set -ex; \
     # Install wp-cli, http://wp-cli.org
-    su-exec anaxexp curl --retry 7 --fail -Ls -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar; \
+    curl --retry 7 --fail -Ls -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar; \
     chmod +x wp-cli.phar; \
     mv wp-cli.phar /usr/local/bin/wp; \
     wp --info --allow-root; \
