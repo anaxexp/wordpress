@@ -44,7 +44,7 @@ RUN set -ex; \
       su-exec anaxexp mkdir -p content/cache; \
       su-exec anaxexp mkdir -p content/languages; \
       su-exec anaxexp mkdir -p content/mu-plugins; \
-      su-exec anaxexp cp -R /usr/src/wordpress/wp/wp-content/themes/* /usr/src/wordpress/content/themes/; \
+      #su-exec anaxexp cp -R /usr/src/wordpress/wp/wp-content/themes/* /usr/src/wordpress/content/themes/; \
       \   
 	   chown :www-data \
         content/ \
