@@ -9,7 +9,9 @@ ARG WP_MD5
 ENV WP_VER="${WP_VER}" \
     WP_SHA1="${WP_SHA1}" \
     WP_MD5="${WP_MD5}" \
-    APP_NAME="WordPress 4"
+    APP_NAME="WordPress 4" \
+    HYPERDB_VERSION=1.1 \
+    WP_CLI_CONFIG_PATH=/var/www/html/wp-cli.yml
 
 USER root
 
@@ -27,29 +29,33 @@ RUN set -ex; \
     rm -rf /tmp/wp.tar.gz; \
     \
     cd /usr/src/wordpress; \
-	   su-exec anaxexp mkdir -p wp-content/uploads; \
+       # Install WordPress via wp-cli & move the default themes to our content dir
+       # Releases at https://core.svn.wordpress.org/tags/ and https://wordpress.org/news/category/releases/
+       #    && wp --allow-root core download --version=${WP_VER} \
+      su-exec anaxexp mkdir -p content/uploads; \
+      su-exec anaxexp mv /usr/src/wordpress/wp-content/themes/* /usr/src/wordpress/content/themes/; \
 	   \
 	   chown :www-data \
-        wp-content/ \
-        wp-content/uploads \
-        wp-content/plugins \
-        wp-content/themes; \
+        content/ \
+        content/uploads \
+        content/plugins \
+        content/themes; \
     \
 	   chmod 775 \
-	       wp-content/ \
-	       wp-content/uploads \
-	       wp-content/plugins \
-	       wp-content/themes; \
+	       content/ \
+	       content/uploads \
+	       content/plugins \
+	       content/themes; \
 	   \
-	   find wp-content/plugins -type d -exec chown -R :www-data {} \; -exec chmod -R 775 {} \;; \
-	   find wp-content/themes -type d -exec chown -R :www-data {} \; -exec chmod -R 775 {} \;; \
+	   find content/plugins -type d -exec chown -R :www-data {} \; -exec chmod -R 775 {} \;; \
+	   find content/themes -type d -exec chown -R :www-data {} \; -exec chmod -R 775 {} \;; \
 	   \
     if [[ -z "${PHP_DEV}" ]]; then \
 	       echo "$(cat /etc/sudoers.d/anaxexp), /usr/local/bin/init" > /etc/sudoers.d/anaxexp; \
 	   fi
 
 # Install wp-cli, http://wp-cli.org
-ENV WP_CLI_CONFIG_PATH /var/www/html/wp-cli.yml
+#ENV WP_CLI_CONFIG_PATH /var/www/html/wp-cli.yml
 RUN set -ex \
     && curl --retry 7 --fail -Ls -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
     && chmod +x wp-cli.phar \
@@ -58,33 +64,25 @@ RUN set -ex \
 
 # Install HyperDB, https://wordpress.org/plugins/hyperdb
 # Releases at https://wordpress.org/plugins/hyperdb/developers/ , though no SHA1 fingerprints are published
-ENV HYPERDB_VERSION=1.1
+#ENV HYPERDB_VERSION=1.1
 RUN set -ex \
     && curl --retry 7 --fail -Ls -o /usr/src/hyperdb.zip https://downloads.wordpress.org/plugin/hyperdb.${HYPERDB_VERSION}.zip \
     && cd /usr/src \
     && unzip hyperdb.zip \
     && chown -R www-data:www-data /usr/src/hyperdb \
-    && mv hyperdb/db.php /usr/src/wordpress/wp-content/. \
+    && mv hyperdb/db.php /usr/src/wordpress/content/. \
     && rm -rf /usr/src/hyperdb.zip /usr/src/hyperdb \
-    && touch /usr/src/wordpress/wp-content/db-config.php
+    && touch /usr/src/wordpress/content/db-config.php
 
 # Install ztollman's object-cache.php or object caching to memcached
 RUN set -ex \
-    && su-exec anaxexp curl --retry 7 --fail -Ls -o /usr/src/wordpress/wp-content/object-cache.php https://raw.githubusercontent.com/tollmanz/wordpress-pecl-memcached-object-cache/master/object-cache.php
+    && su-exec anaxexp curl --retry 7 --fail -Ls -o /usr/src/wordpress/content/object-cache.php https://raw.githubusercontent.com/tollmanz/wordpress-pecl-memcached-object-cache/master/object-cache.php
 
 
 # Copy the WordPress skeleton from this repo into the container
 # This includes any themes and/or plugins we've added to the content/themes and content/plugins directories.
 COPY /usr/src/wordpress /usr/src/wordpress
 RUN chown -R www-data:www-data /usr/src/wordpress/*
-
-# Install WordPress via wp-cli & move the default themes to our content dir
-# Releases at https://core.svn.wordpress.org/tags/ and https://wordpress.org/news/category/releases/
-#ENV WORDPRESS_VERSION 4.9.8
-#RUN set -ex \
-#    && wp --allow-root core download --version=${WORDPRESS_VERSION} \
-#    && mv /var/www/html/wordpress/wp-content/themes/* /var/www/html/content/themes/
-
 
 USER anaxexp
 

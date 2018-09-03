@@ -8,7 +8,7 @@ MAKEFLAGS += --warn-undefined-variables
 GIT_COMMIT ?= $(shell git rev-parse --short HEAD)
 GIT_BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD)
 WORKSPACE ?= $(shell pwd)
-
+APP_ROOT ?= /var/www/html
 namespace ?= anaxexp
 tag := branch-$(shell basename $(GIT_BRANCH))
 
@@ -103,6 +103,7 @@ pull:
 ## Print environment for build debugging
 debug:
 	@echo WORKSPACE=$(WORKSPACE)
+	@echo APP_ROOT=$(APP_ROOT)
 	@echo GIT_COMMIT=$(GIT_COMMIT)
 	@echo GIT_BRANCH=$(GIT_BRANCH)
 	@echo namespace=$(namespace)
