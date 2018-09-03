@@ -42,10 +42,10 @@ RUN set -ex; \
     su-exec anaxexp tar zxf /tmp/wp.tar.gz --no-same-owner --strip-components=1 -C /usr/src/wordpress; \
     rm -rf /tmp/wp.tar.gz; \
     \
-      su-exec anaxexp curl --retry 7 --fail -Ls -o /usr/src/hyperdb.zip https://downloads.wordpress.org/plugin/hyperdb.${HYPERDB_VERSION}.zip; \
+      curl --retry 7 --fail -Ls -o /usr/src/hyperdb.zip https://downloads.wordpress.org/plugin/hyperdb.${HYPERDB_VERSION}.zip; \
     \
     cd /usr/src; \
-      unzip hyperdb.zip; \
+      su-exec anaxexp unzip hyperdb.zip; \
     \  
     cd /usr/src/wordpress; \
        # Install WordPress via wp-cli & move the default themes to our content dir
@@ -56,7 +56,6 @@ RUN set -ex; \
       su-exec anaxexp mkdir -p content/languages; \
       su-exec anaxexp mkdir -p content/mu-plugins; \
       mv /usr/src/wordpress/wp-content/themes/* /usr/src/wordpress/content/themes/; \
-      # chown -R www-data:www-data /usr/src/hyperdb; \
       mv /usr/src/hyperdb/db.php /usr/src/wordpress/content/.; \
       rm -rf /usr/src/hyperdb.zip /usr/src/hyperdb; \
       touch /usr/src/wordpress/content/db-config.php; \
