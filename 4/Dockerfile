@@ -33,6 +33,9 @@ RUN set -ex; \
        # Releases at https://core.svn.wordpress.org/tags/ and https://wordpress.org/news/category/releases/
        #    && wp --allow-root core download --version=${WP_VER} \
       su-exec anaxexp mkdir -p content/uploads; \
+      su-exec anaxexp mkdir -p content/cache; \
+      su-exec anaxexp mkdir -p content/languages; \
+      su-exec anaxexp mkdir -p content/mu-plugins; \
       su-exec anaxexp mv /usr/src/wordpress/wp-content/themes/* /usr/src/wordpress/content/themes/; \
 	  && curl --retry 7 --fail -Ls -o /usr/src/hyperdb.zip https://downloads.wordpress.org/plugin/hyperdb.${HYPERDB_VERSION}.zip \
       && cd /usr/src \
@@ -40,7 +43,8 @@ RUN set -ex; \
       && chown -R www-data:www-data /usr/src/hyperdb; \
       && mv hyperdb/db.php /usr/src/wordpress/content/.; \
       && rm -rf /usr/src/hyperdb.zip /usr/src/hyperdb; \
-      && touch /usr/src/wordpress/content/db-config.php; \ 
+      && touch /usr/src/wordpress/content/db-config.php; \
+      && su-exec anaxexp curl --retry 7 --fail -Ls -o /usr/src/wordpress/content/object-cache.php https://raw.githubusercontent.com/tollmanz/wordpress-pecl-memcached-object-cache/master/object-cache.php; \
        \
     cd /usr/src/wordpress; \   
 	   chown :www-data \
@@ -48,12 +52,18 @@ RUN set -ex; \
         content/uploads \
         content/plugins \
         content/themes; \
+        content/cache; \
+        content/languages; \
+        content/mu-plugins; \
     \
 	   chmod 775 \
 	       content/ \
 	       content/uploads \
 	       content/plugins \
 	       content/themes; \
+           content/cache; \
+           content/languages; \
+           content/mu-plugins; \
 	   \
 	   find content/plugins -type d -exec chown -R :www-data {} \; -exec chmod -R 775 {} \;; \
 	   find content/themes -type d -exec chown -R :www-data {} \; -exec chmod -R 775 {} \;; \
@@ -69,23 +79,6 @@ RUN set -ex \
     && chmod +x wp-cli.phar \
     && mv wp-cli.phar /usr/local/bin/wp \
     && wp --info --allow-root
-
-# Install HyperDB, https://wordpress.org/plugins/hyperdb
-# Releases at https://wordpress.org/plugins/hyperdb/developers/ , though no SHA1 fingerprints are published
-#ENV HYPERDB_VERSION=1.1
-RUN set -ex \
-    && curl --retry 7 --fail -Ls -o /usr/src/hyperdb.zip https://downloads.wordpress.org/plugin/hyperdb.${HYPERDB_VERSION}.zip \
-    && cd /usr/src \
-    && unzip hyperdb.zip \
-    && chown -R www-data:www-data /usr/src/hyperdb \
-    && mv hyperdb/db.php /usr/src/wordpress/content/. \
-    && rm -rf /usr/src/hyperdb.zip /usr/src/hyperdb \
-    && touch /usr/src/wordpress/content/db-config.php
-
-# Install ztollman's object-cache.php or object caching to memcached
-RUN set -ex \
-    && su-exec anaxexp curl --retry 7 --fail -Ls -o /usr/src/wordpress/content/object-cache.php https://raw.githubusercontent.com/tollmanz/wordpress-pecl-memcached-object-cache/master/object-cache.php
-
 
 # Copy the WordPress skeleton from this repo into the container
 # This includes any themes and/or plugins we've added to the content/themes and content/plugins directories.
