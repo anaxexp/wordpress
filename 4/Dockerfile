@@ -15,7 +15,15 @@ ENV WP_VER="${WP_VER}" \
 
 USER root
 
+
+
 RUN set -ex; \
+    # Install wp-cli, http://wp-cli.org
+    # ENV WP_CLI_CONFIG_PATH /var/www/html/wp-cli.yml
+    curl --retry 7 --fail -Ls -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar; \
+    chmod +x wp-cli.phar; \
+    mv wp-cli.phar /usr/local/bin/wp; \
+    wp --info --allow-root; \
     \
     mv /usr/local/bin/actions.mk /usr/local/bin/wordpress-php.mk; \
     mkdir -p /usr/src/wordpress/; \
@@ -72,13 +80,7 @@ RUN set -ex; \
 	       echo "$(cat /etc/sudoers.d/anaxexp), /usr/local/bin/init" > /etc/sudoers.d/anaxexp; \
 	   fi
 
-# Install wp-cli, http://wp-cli.org
-#ENV WP_CLI_CONFIG_PATH /var/www/html/wp-cli.yml
-RUN set -ex \
-    && curl --retry 7 --fail -Ls -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
-    && chmod +x wp-cli.phar \
-    && mv wp-cli.phar /usr/local/bin/wp \
-    && wp --info --allow-root
+
 
 # Copy the WordPress skeleton from this repo into the container
 # This includes any themes and/or plugins we've added to the content/themes and content/plugins directories.
