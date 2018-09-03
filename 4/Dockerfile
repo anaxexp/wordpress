@@ -33,7 +33,7 @@ RUN set -ex; \
 	    wget -O wp.tar.gz "https://wordpress.org/wordpress-${WP_VER}.tar.gz"; \
 	    echo "$WP_SHA1 *wp.tar.gz" | sha1sum -c -; \
 	    echo "$WP_MD5 *wp.tar.gz" | md5sum -c -; \
-    su-exec anaxexp tar zxf /tmp/wp.tar.gz --no-same-owner --strip-components=1 -C /usr/src/wordpress; \
+    su-exec anaxexp tar zxf /tmp/wp.tar.gz --no-same-owner --strip-components=1 -C /usr/src/wordpress/wp; \
     rm -rf /tmp/wp.tar.gz; \
     \ 
     cd /usr/src/wordpress; \
@@ -44,7 +44,7 @@ RUN set -ex; \
       su-exec anaxexp mkdir -p content/cache; \
       su-exec anaxexp mkdir -p content/languages; \
       su-exec anaxexp mkdir -p content/mu-plugins; \
-      su-exec anaxexp cp -R /usr/src/wordpress/wp-content/themes/* /usr/src/wordpress/content/themes/; \
+      su-exec anaxexp cp -R /usr/src/wordpress/wp/wp-content/themes/* /usr/src/wordpress/content/themes/; \
       \   
 	   chown :www-data \
         content/ \
