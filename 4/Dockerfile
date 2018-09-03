@@ -55,7 +55,7 @@ RUN set -ex; \
       su-exec anaxexp mkdir -p content/cache; \
       su-exec anaxexp mkdir -p content/languages; \
       su-exec anaxexp mkdir -p content/mu-plugins; \
-      mv /usr/src/wordpress/wp-content/themes/* /usr/src/wordpress/content/themes/; \
+      su-exec anaxexp cp -R /usr/src/wordpress/wp-content/themes/* /usr/src/wordpress/content/themes/; \
       mv /tmp/hyperdb/db.php /usr/src/wordpress/content/.; \
       rm -rf /tmp/hyperdb.zip /tmp/hyperdb; \
       su-exec anaxexp touch /usr/src/wordpress/content/db-config.php; \
