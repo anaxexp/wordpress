@@ -41,7 +41,7 @@ RUN set -ex; \
       su-exec anaxexp mkdir -p content/cache; \
       su-exec anaxexp mkdir -p content/languages; \
       su-exec anaxexp mkdir -p content/mu-plugins; \
-      su-exec anaxexp mv /usr/src/wordpress/wp-content/themes/* /usr/src/wordpress/content/themes/; \
+      mv /usr/src/wordpress/wp-content/themes/* /usr/src/wordpress/content/themes/; \
 	  su-exec anaxexp curl --retry 7 --fail -Ls -o /usr/src/hyperdb.zip https://downloads.wordpress.org/plugin/hyperdb.${HYPERDB_VERSION}.zip; \
       cd /usr/src; \
       unzip hyperdb.zip; \
