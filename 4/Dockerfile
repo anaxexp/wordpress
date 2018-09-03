@@ -27,8 +27,11 @@ RUN set -ex \
 RUN set -ex; \
     mv /usr/local/bin/actions.mk /usr/local/bin/wordpress-php.mk; \
     mkdir -p /usr/src/wordpress/; \
+    \
+      chown -R anaxexp:anaxexp /usr/src/wordpress/; \
+    \  
     mkdir -p /usr/src/wordpress/wp/; \
-	    chown -R anaxexp:anaxexp /usr/src/wordpress/; \
+	    chown -R anaxexp:anaxexp /usr/src/wordpress/wp/; \
 	    \
 	    cd /tmp; \
 	    wget -O wp.tar.gz "https://wordpress.org/wordpress-${WP_VER}.tar.gz"; \
