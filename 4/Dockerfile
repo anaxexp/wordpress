@@ -45,28 +45,30 @@ RUN set -ex; \
        # Releases at https://core.svn.wordpress.org/tags/ and https://wordpress.org/news/category/releases/
        #    && wp --allow-root core download --version=${WP_VER} \
       su-exec anaxexp mkdir -p content/uploads; \
-      su-exec anaxexp mkdir -p content/cache; \
-      su-exec anaxexp mkdir -p content/languages; \
-      su-exec anaxexp mkdir -p content/mu-plugins; \
-      #su-exec anaxexp cp -R /usr/src/wordpress/wp/wp-content/themes/* /usr/src/wordpress/content/themes/; \
+      #su-exec anaxexp mkdir -p content/cache; \
+      #su-exec anaxexp mkdir -p content/languages; \
+      su-exec anaxexp mkdir -p content/plugins; \
+      #su-exec anaxexp mkdir -p content/mu-plugins; \
+      su-exec anaxexp mkdir -p content/themes; \
+      su-exec anaxexp cp -R /usr/src/wordpress/wp/wp-content/themes/* /usr/src/wordpress/content/themes/; \
       \   
 	   chown :www-data \
         content/ \
         content/uploads \
         content/plugins \
         content/themes; \
-        content/cache; \
-        content/languages; \
-        content/mu-plugins; \
+        #content/cache; \
+        #content/languages; \
+        #content/mu-plugins; \
     \
 	   chmod 775 \
 	       content/ \
 	       content/uploads \
 	       content/plugins \
 	       content/themes; \
-           content/cache; \
-           content/languages; \
-           content/mu-plugins; \
+           #content/cache; \
+           #content/languages; \
+           #content/mu-plugins; \
 	   \
 	   find content/plugins -type d -exec chown -R :www-data {} \; -exec chmod -R 775 {} \;; \
 	   find content/themes -type d -exec chown -R :www-data {} \; -exec chmod -R 775 {} \;; \
