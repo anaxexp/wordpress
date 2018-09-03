@@ -26,6 +26,7 @@ RUN set -ex \
 
 RUN set -ex; \
     mv /usr/local/bin/actions.mk /usr/local/bin/wordpress-php.mk; \
+    mkdir -p /usr/src/wordpress/; \
     mkdir -p /usr/src/wordpress/wp/; \
 	    chown -R anaxexp:anaxexp /usr/src/wordpress/; \
 	    \
