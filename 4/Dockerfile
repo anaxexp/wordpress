@@ -34,7 +34,15 @@ RUN set -ex; \
        #    && wp --allow-root core download --version=${WP_VER} \
       su-exec anaxexp mkdir -p content/uploads; \
       su-exec anaxexp mv /usr/src/wordpress/wp-content/themes/* /usr/src/wordpress/content/themes/; \
-	   \
+	  && curl --retry 7 --fail -Ls -o /usr/src/hyperdb.zip https://downloads.wordpress.org/plugin/hyperdb.${HYPERDB_VERSION}.zip \
+      && cd /usr/src \
+      && unzip hyperdb.zip \
+      && chown -R www-data:www-data /usr/src/hyperdb; \
+      && mv hyperdb/db.php /usr/src/wordpress/content/.; \
+      && rm -rf /usr/src/hyperdb.zip /usr/src/hyperdb; \
+      && touch /usr/src/wordpress/content/db-config.php; \ 
+       \
+    cd /usr/src/wordpress; \   
 	   chown :www-data \
         content/ \
         content/uploads \
