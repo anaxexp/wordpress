@@ -45,14 +45,14 @@ RUN set -ex; \
       su-exec anaxexp mkdir -p content/languages; \
       su-exec anaxexp mkdir -p content/mu-plugins; \
       su-exec anaxexp mv /usr/src/wordpress/wp-content/themes/* /usr/src/wordpress/content/themes/; \
-	  && curl --retry 7 --fail -Ls -o /usr/src/hyperdb.zip https://downloads.wordpress.org/plugin/hyperdb.${HYPERDB_VERSION}.zip \
-      && cd /usr/src \
-      && unzip hyperdb.zip \
-      && chown -R www-data:www-data /usr/src/hyperdb; \
-      && mv hyperdb/db.php /usr/src/wordpress/content/.; \
-      && rm -rf /usr/src/hyperdb.zip /usr/src/hyperdb; \
-      && touch /usr/src/wordpress/content/db-config.php; \
-      && su-exec anaxexp curl --retry 7 --fail -Ls -o /usr/src/wordpress/content/object-cache.php https://raw.githubusercontent.com/tollmanz/wordpress-pecl-memcached-object-cache/master/object-cache.php; \
+	  su-exec anaxexp curl --retry 7 --fail -Ls -o /usr/src/hyperdb.zip https://downloads.wordpress.org/plugin/hyperdb.${HYPERDB_VERSION}.zip; \
+      cd /usr/src; \
+      unzip hyperdb.zip; \
+      # chown -R www-data:www-data /usr/src/hyperdb; \
+      mv hyperdb/db.php /usr/src/wordpress/content/.; \
+      rm -rf /usr/src/hyperdb.zip /usr/src/hyperdb; \
+      touch /usr/src/wordpress/content/db-config.php; \
+      su-exec anaxexp curl --retry 7 --fail -Ls -o /usr/src/wordpress/content/object-cache.php https://raw.githubusercontent.com/tollmanz/wordpress-pecl-memcached-object-cache/master/object-cache.php; \
        \
     cd /usr/src/wordpress; \   
 	   chown :www-data \
