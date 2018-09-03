@@ -12,25 +12,19 @@ ARG WP_CLI_CONFIG_PATH
 ENV WP_VER="${WP_VER}" \
     WP_SHA1="${WP_SHA1}" \
     WP_MD5="${WP_MD5}" \
-    APP_NAME="WordPress 4" \
-    HYPERDB_VERSION=1.1 \
-    WP_CLI_CONFIG_PATH=/var/www/html/wp-cli.yml
+    APP_NAME="WordPress 4" 
 
 USER root
 
 # Install wp-cli, http://wp-cli.org
-#ENV WP_CLI_CONFIG_PATH /var/www/html/wp-cli.yml
-#RUN set -ex \
-#    && curl --retry 7 --fail -Ls -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
-#    && chmod +x wp-cli.phar \
-#    && mv wp-cli.phar /usr/local/bin/wp \
-#    && wp --info --allow-root
+ENV WP_CLI_CONFIG_PATH /var/www/html/wp-cli.yml
+RUN set -ex \
+    && curl --retry 7 --fail -Ls -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
+    && chmod +x wp-cli.phar \
+    && mv wp-cli.phar /usr/local/bin/wp \
+    && wp --info --allow-root
 
 RUN set -ex; \
-    curl --retry 7 --fail -Ls -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar; \
-    chmod +x wp-cli.phar; \
-    mv wp-cli.phar /usr/local/bin/wp; \
-    wp --info --allow-root; \
     mv /usr/local/bin/actions.mk /usr/local/bin/wordpress-php.mk; \
     mkdir -p /usr/src/wordpress/; \
 	    chown -R anaxexp:anaxexp /usr/src/wordpress/; \
@@ -41,12 +35,7 @@ RUN set -ex; \
 	    echo "$WP_MD5 *wp.tar.gz" | md5sum -c -; \
     su-exec anaxexp tar zxf /tmp/wp.tar.gz --no-same-owner --strip-components=1 -C /usr/src/wordpress; \
     rm -rf /tmp/wp.tar.gz; \
-    \
-      curl --retry 7 --fail -Ls -o /tmp/hyperdb.zip https://downloads.wordpress.org/plugin/hyperdb.${HYPERDB_VERSION}.zip; \
-    \
-    cd /tmp \
-      su-exec anaxexp unzip hyperdb.zip; \
-    \  
+    \ 
     cd /usr/src/wordpress; \
        # Install WordPress via wp-cli & move the default themes to our content dir
        # Releases at https://core.svn.wordpress.org/tags/ and https://wordpress.org/news/category/releases/
@@ -56,11 +45,7 @@ RUN set -ex; \
       su-exec anaxexp mkdir -p content/languages; \
       su-exec anaxexp mkdir -p content/mu-plugins; \
       su-exec anaxexp cp -R /usr/src/wordpress/wp-content/themes/* /usr/src/wordpress/content/themes/; \
-      mv /tmp/hyperdb/db.php /usr/src/wordpress/content/.; \
-      rm -rf /tmp/hyperdb.zip /tmp/hyperdb; \
-      su-exec anaxexp touch /usr/src/wordpress/content/db-config.php; \
-      curl --retry 7 --fail -Ls -o /usr/src/wordpress/content/object-cache.php https://raw.githubusercontent.com/tollmanz/wordpress-pecl-memcached-object-cache/master/object-cache.php; \
-       \   
+      \   
 	   chown :www-data \
         content/ \
         content/uploads \
@@ -87,6 +72,22 @@ RUN set -ex; \
 	   fi
 
 
+
+# Install HyperDB, https://wordpress.org/plugins/hyperdb
+# Releases at https://wordpress.org/plugins/hyperdb/developers/ , though no SHA1 fingerprints are published
+ENV HYPERDB_VERSION=1.1
+RUN set -ex \
+    && curl --retry 7 --fail -Ls -o /usr/src/hyperdb.zip https://downloads.wordpress.org/plugin/hyperdb.${HYPERDB_VERSION}.zip \
+    && cd /usr/src \
+    && unzip hyperdb.zip \
+    && chown -R www-data:www-data /usr/src/hyperdb \
+    && mv hyperdb/db.php /usr/src/wordpress/content/. \
+    && rm -rf /usr/src/hyperdb.zip /usr/src/hyperdb \
+    && touch /usr/src/wordpress/content/db-config.php
+
+# Install ztollman's object-cache.php or object caching to memcached
+RUN set -ex \
+    && su-exec anaxexp curl --retry 7 --fail -Ls -o /usr/src/wordpress/content/object-cache.php https://raw.githubusercontent.com/tollmanz/wordpress-pecl-memcached-object-cache/master/object-cache.php
 
 # Copy the WordPress skeleton from this repo into the container
 # This includes any themes and/or plugins we've added to the content/themes and content/plugins directories.
