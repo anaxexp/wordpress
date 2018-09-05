@@ -63,18 +63,16 @@ RUN set -ex \
     && wp --info --allow-root
 
 COPY /usr/src/wordpress /usr/src/wordpress
-RUN chown -R anaxexp:anaxexp /usr/src/wordpress
-
 # Copy the WordPress skeleton from this repo into the container
 # This includes any themes and/or plugins we've added to the content/themes and content/plugins directories.
 RUN set -ex; \
     mv /usr/local/bin/actions.mk /usr/local/bin/wordpress-php.mk; \
     #mkdir -p /usr/src/wordpress; \
     #mkdir -p /usr/src/wordpress/web; \
-    #mkdir -p /usr/src/wordpress/web/wp; \
-    #\
-    #  chown -R anaxexp:anaxexp /usr/src/wordpress/; \
-    #\  
+    mkdir -p /usr/src/wordpress/web/wp; \
+    \
+      chown -R anaxexp:anaxexp /usr/src/wordpress/; \
+    \  
 	    cd /tmp; \
 	    wget -O wp.tar.gz "https://wordpress.org/wordpress-${WP_VER}.tar.gz"; \
 	    echo "$WP_SHA1 *wp.tar.gz" | sha1sum -c -; \
