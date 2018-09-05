@@ -9,7 +9,7 @@ GIT_COMMIT ?= $(shell git rev-parse --short HEAD)
 GIT_BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD)
 WORKSPACE ?= $(shell pwd)
 APP_ROOT ?= /var/www/html
-WP_CLI_CONFIG_PATH ?= /var/www/html/wp-cli.yml
+WP_CLI_CONFIG_PATH ?= /usr/src/wordpress/wp-cli.yml
 namespace ?= anaxexp
 tag := branch-$(shell basename $(GIT_BRANCH))
 

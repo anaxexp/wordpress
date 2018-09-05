@@ -12,8 +12,8 @@ if [[ ! -f "${APP_ROOT}/web/wp/index.php" ]]; then
     echo "${APP_NAME} not found in ${APP_ROOT} - copying now..."
     ls "${src_dir}/"
     ls "${APP_ROOT}/"
-    rsync -a "${src_dir}/" "${APP_ROOT}/web/wp/"
-    echo "Complete! ${APP_NAME} has been successfully copied to ${APP_ROOT}/web/wp"
+    rsync -a "${src_dir}/" "${APP_ROOT}/"
+    echo "Complete! ${APP_NAME} has been successfully copied to ${APP_ROOT}"
 
     # docker4wordpress
     if [[ -z "${ANAXEXP_APP_NAME}" ]]; then
@@ -33,13 +33,13 @@ elif [[ ! -f "${APP_ROOT}/local-config.php" ]]; then
     echo "define('FS_METHOD', 'direct');" >> "${APP_ROOT}/local-config.php"
 else
     latest_ver=$(su-exec anaxexp wp core version --path="${src_dir}")
-    current_ver=$(su-exec anaxexp wp core version --path="${APP_ROOT}/web/wp")
+    current_ver=$(su-exec anaxexp wp core version --path="${APP_ROOT}")
 
     res=$(compare_semver "${latest_ver}" "${current_ver}" ">")
 
     if [[ "${res}" == 0 ]]; then
         echo "Current version of ${APP_NAME} is outdated (${current_ver}), updating to ${latest_ver}..."
-        rsync -a "${src_dir}/" "${APP_ROOT}/web/wp"
+        rsync -a "${src_dir}/" "${APP_ROOT}/"
         echo "Complete! ${APP_NAME} has been successfully updated to ${latest_ver}"
     fi
 fi
