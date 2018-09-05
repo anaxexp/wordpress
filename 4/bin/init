@@ -8,29 +8,38 @@ fi
 
 src_dir="/usr/src/wordpress"
 
-if [[ ! -f "${APP_ROOT}/index.php" ]]; then
+if [[ ! -f "${APP_ROOT}/web/wp/index.php" ]]; then
     echo "${APP_NAME} not found in ${APP_ROOT} - copying now..."
-    rsync -a "${src_dir}/" "${APP_ROOT}/"
-    echo "Complete! ${APP_NAME} has been successfully copied to ${APP_ROOT}"
+    ls "${src_dir}/"
+    ls "${APP_ROOT}/"
+    rsync -a "${src_dir}/" "${APP_ROOT}/web/wp/"
+    echo "Complete! ${APP_NAME} has been successfully copied to ${APP_ROOT}/web/wp"
 
     # docker4wordpress
     if [[ -z "${ANAXEXP_APP_NAME}" ]]; then
-        su-exec anaxexp cp "${APP_ROOT}/wp-config-sample.php" "${APP_ROOT}/wp-config.php"
-        sed -i "s/database_name_here/${DB_NAME:-wordpress}/" "${APP_ROOT}/wp-config.php"
-        sed -i "s/username_here/${DB_USER:-wordpress}/" "${APP_ROOT}/wp-config.php"
-        sed -i "s/password_here/${DB_PASSWORD:-wordpress}/" "${APP_ROOT}/wp-config.php"
-        sed -i "s/'DB_HOST', 'localhost'/'DB_HOST', '${DB_HOST:-mariadb}'/" "${APP_ROOT}/wp-config.php"
-        echo "define('FS_METHOD', 'direct');" >> "${APP_ROOT}/wp-config.php"
+        su-exec anaxexp cp "${APP_ROOT}/local-config-sample.php" "${APP_ROOT}/local-config.php"
+        sed -i "s/database_name_here/${DB_NAME:-wordpress}/" "${APP_ROOT}/local-config.php"
+        sed -i "s/user_name_here/${DB_USER:-wordpress}/" "${APP_ROOT}/local-config.php"
+        sed -i "s/password_here/${DB_PASSWORD:-wordpress}/" "${APP_ROOT}/local-config.php"
+        sed -i "s/'DB_HOST', 'localhost'/'DB_HOST', '${DB_HOST:-mariadb}'/" "${APP_ROOT}/local-config.php"
+        echo "define('FS_METHOD', 'direct');" >> "${APP_ROOT}/local-config.php"
     fi
+elif [[ ! -f "${APP_ROOT}/local-config.php" ]]; then
+    su-exec anaxexp cp "${APP_ROOT}/local-config-sample.php" "${APP_ROOT}/local-config.php"
+    sed -i "s/database_name_here/${DB_NAME:-wordpress}/" "${APP_ROOT}/local-config.php"
+    sed -i "s/username_here/${DB_USER:-wordpress}/" "${APP_ROOT}/local-config.php"
+    sed -i "s/password_here/${DB_PASSWORD:-wordpress}/" "${APP_ROOT}/local-config.php"
+    sed -i "s/'DB_HOST', 'localhost'/'DB_HOST', '${DB_HOST:-mariadb}'/" "${APP_ROOT}/local-config.php"
+    echo "define('FS_METHOD', 'direct');" >> "${APP_ROOT}/local-config.php"
 else
     latest_ver=$(su-exec anaxexp wp core version --path="${src_dir}")
-    current_ver=$(su-exec anaxexp wp core version --path="${APP_ROOT}")
+    current_ver=$(su-exec anaxexp wp core version --path="${APP_ROOT}/web/wp")
 
     res=$(compare_semver "${latest_ver}" "${current_ver}" ">")
 
     if [[ "${res}" == 0 ]]; then
         echo "Current version of ${APP_NAME} is outdated (${current_ver}), updating to ${latest_ver}..."
-        rsync -a "${src_dir}/" "${APP_ROOT}/"
+        rsync -a "${src_dir}/" "${APP_ROOT}/web/wp"
         echo "Complete! ${APP_NAME} has been successfully updated to ${latest_ver}"
     fi
 fi

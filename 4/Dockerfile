@@ -26,9 +26,14 @@ RUN set -ex \
     && mv wp-cli.phar /usr/local/bin/wp \
     && wp --info --allow-root
 
+COPY /usr/src/wordpress /var/www/html
+RUN chown -R anaxexp:anaxexp /var/www/html/web
+
+# Copy the WordPress skeleton from this repo into the container
+# This includes any themes and/or plugins we've added to the content/themes and content/plugins directories.
 RUN set -ex; \
     mv /usr/local/bin/actions.mk /usr/local/bin/wordpress-php.mk; \
-    mkdir -p /usr/src/wordpress/; \
+    mkdir -p /usr/src/wordpress; \
     \
       chown -R anaxexp:anaxexp /usr/src/wordpress/; \
     \  
@@ -38,44 +43,46 @@ RUN set -ex; \
 	    echo "$WP_MD5 *wp.tar.gz" | md5sum -c -; \
     su-exec anaxexp tar zxf /tmp/wp.tar.gz --no-same-owner --strip-components=1 -C /usr/src/wordpress; \
     rm -rf /tmp/wp.tar.gz; \
-    \
-       # Install WordPress via wp-cli & move the default themes to our content dir
-       # Releases at https://core.svn.wordpress.org/tags/ and https://wordpress.org/news/category/releases/
-       #    && wp --allow-root core download --version=${WP_VER} \
-      su-exec anaxexp mkdir -p content/uploads; \
+      su-exec anaxexp mkdir -p web; \
+      su-exec anaxexp mkdir -p web/content/uploads; \
       #su-exec anaxexp mkdir -p content/cache; \
       #su-exec anaxexp mkdir -p content/languages; \
-      su-exec anaxexp mkdir -p content/plugins; \
+      su-exec anaxexp mkdir -p web/content/plugins; \
       #su-exec anaxexp mkdir -p content/mu-plugins; \
-      su-exec anaxexp mkdir -p content/themes; \
+      su-exec anaxexp mkdir -p web/content/themes; \
       #su-exec anaxexp cp -R /usr/src/wordpress/wp-content/themes/* /usr/src/wordpress/content/themes/; \
       \   
 	   chown :www-data \
-        content/ \
-        content/uploads \
-        content/plugins \
-        content/themes; \
+        web \
+        web/content/ \
+        web/content/uploads \
+        web/content/plugins \
+        web/content/themes; \
         #content/cache; \
         #content/languages; \
         #content/mu-plugins; \
     \
 	   chmod 775 \
-	       content/ \
-	       content/uploads \
-	       content/plugins \
-	       content/themes; \
+           web \
+	       web/content/ \
+	       web/content/uploads \
+	       web/content/plugins \
+	       web/content/themes; \
            #content/cache; \
            #content/languages; \
            #content/mu-plugins; \
 	   \
-	   find content/plugins -type d -exec chown -R :www-data {} \; -exec chmod -R 775 {} \;; \
-	   find content/themes -type d -exec chown -R :www-data {} \; -exec chmod -R 775 {} \;; \
+	   find web/content/plugins -type d -exec chown -R :www-data {} \; -exec chmod -R 775 {} \;; \
+	   find web/content/themes -type d -exec chown -R :www-data {} \; -exec chmod -R 775 {} \;; \
 	   \
     if [[ -z "${PHP_DEV}" ]]; then \
 	       echo "$(cat /etc/sudoers.d/anaxexp), /usr/local/bin/init" > /etc/sudoers.d/anaxexp; \
 	   fi
+    
 
-
+RUN set -ex; \
+    ls -la web; \
+    su-exec anaxexp composer install
 
 # Install HyperDB, https://wordpress.org/plugins/hyperdb
 # Releases at https://wordpress.org/plugins/hyperdb/developers/ , though no SHA1 fingerprints are published
@@ -86,18 +93,15 @@ RUN set -ex \
     #&& cd /usr/src \
     && unzip hyperdb.${HYPERDB_VERSION}.zip \
     && chown -R www-data:www-data hyperdb \
-    && mv hyperdb/db.php /usr/src/wordpress/wp-content/. \
+    && mv hyperdb/db.php web/content/. \
     && rm -rf hyperdb.${HYPERDB_VERSION}.zip hyperdb \
-    && touch /usr/src/wordpress/wp-content/db-config.php
+    && touch web/content/db-config.php
 
 # Install ztollman's object-cache.php or object caching to memcached
 RUN set -ex \
-    && su-exec anaxexp curl --retry 7 --fail -Ls -o /usr/src/wordpress/wp-content/object-cache.php https://raw.githubusercontent.com/tollmanz/wordpress-pecl-memcached-object-cache/master/object-cache.php
+    && su-exec anaxexp curl --retry 7 --fail -Ls -o web/content/object-cache.php https://raw.githubusercontent.com/tollmanz/wordpress-pecl-memcached-object-cache/master/object-cache.php
 
-# Copy the WordPress skeleton from this repo into the container
-# This includes any themes and/or plugins we've added to the content/themes and content/plugins directories.
-COPY /usr/src/wordpress /usr/src/wordpress
-RUN chown -R www-data:www-data /usr/src/wordpress/*
+
 
 USER anaxexp
 
