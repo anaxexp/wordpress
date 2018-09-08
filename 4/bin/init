@@ -19,26 +19,26 @@ elif [[ -f "${www_dir}/compose.json" && -d "${www_dir}/vendor" ]]; then
     su-exec anaxexp composer update --d="${www_dir}/"
     echo "Complete! composer has successfully updated wordpress in ${APP_ROOT}/"
 elif [[ ! -f "${www_dir}/local-config.php" ]]; then
-    su-exec anaxexp cp "${www_dir}/local-config-sample.php" "${www_dir}/local-config.php"
+    cp "${www_dir}/local-config-sample.php" "${www_dir}/local-config.php"
     sed -i "s/database_name_here/${DB_NAME:-wordpress}/" "${www_dir}/local-config.php"
     sed -i "s/username_here/${DB_USER:-wordpress}/" "${www_dir}/local-config.php"
     sed -i "s/password_here/${DB_PASSWORD:-wordpress}/" "${www_dir}/local-config.php"
     sed -i "s/'DB_HOST', 'localhost'/'DB_HOST', '${DB_HOST:-mariadb}'/" "${www_dir}/local-config.php"
     echo "define('FS_METHOD', 'direct');" >> "${www_dir}/local-config.php"    
 elif [[ ! -f "${APP_ROOT}/wp/index.php" ]]; then
-    echo "${APP_NAME} not found in ${APP_ROOT} - copying now..."
+    echo "${APP_NAME} not found in ${APP_ROOT}/wp - copying now..."
     ls "${src_dir}/"
     ls "${APP_ROOT}/"
-    rsync -a "${src_dir}/" "${APP_ROOT}/"
-    echo "Complete! ${APP_NAME} has been successfully copied to ${APP_ROOT}/"
+    rsync -a "${src_dir}/" "${APP_ROOT}/wp"
+    echo "Complete! ${APP_NAME} has been successfully copied to ${APP_ROOT}/wp"
     # docker4wordpress
     if [[ -z "${ANAXEXP_APP_NAME}" ]]; then
-        su-exec anaxexp cp "${APP_NAME}/config-sample.php" "${APP_NAME}/wp-config.php"
-        sed -i "s/database_name_here/${DB_NAME:-wordpress}/" "${APP_NAME}/wp-config.php"
-        sed -i "s/user_name_here/${DB_USER:-wordpress}/" "${APP_NAME}/wp-config.php"
-        sed -i "s/password_here/${DB_PASSWORD:-wordpress}/" "${APP_NAME}/wp-config.php"
-        sed -i "s/'DB_HOST', 'localhost'/'DB_HOST', '${DB_HOST:-mariadb}'/" "${APP_NAME}/wp-config.php"
-        echo "define('FS_METHOD', 'direct');" >> "${APP_NAME}/local-config.php"
+        cp "${www_dir}/local-config-sample.php" "${www_dir}/wp-config.php"
+        sed -i "s/database_name_here/${DB_NAME:-wordpress}/" "${www_dir}/wp-config.php"
+        sed -i "s/user_name_here/${DB_USER:-wordpress}/" "${www_dir}/wp-config.php"
+        sed -i "s/password_here/${DB_PASSWORD:-wordpress}/" "${www_dir}/wp-config.php"
+        sed -i "s/'DB_HOST', 'localhost'/'DB_HOST', '${DB_HOST:-mariadb}'/" "${www_dir}/wp-config.php"
+        echo "define('FS_METHOD', 'direct');" >> "${www_dir}/local-config.php"
     fi
 else
     latest_ver=$(su-exec anaxexp wp core version --path="${src_dir}")
