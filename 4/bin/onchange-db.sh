@@ -6,4 +6,4 @@ consul-template \
     -once \
     -dedup \
     -consul-addr ${CONSUL}:8500 \
-    -template "/var/www/html/db-config.php.ctmpl:/var/www/html/web/content/db-config.php"
+    -template "/var/www/html/db-config.php.ctmpl:/var/www/html/content/db-config.php"

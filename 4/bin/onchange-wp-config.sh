@@ -4,4 +4,4 @@ consul-template \
     -once \
     -dedup \
     -consul-addr ${CONSUL}:8500 \
-    -template "/var/www/html/wp-config.php.ctmpl:/var/www/html/wp-config.php"
+    -template "/var/www/wp-config.php.ctmpl:/var/www/wp-config.php"

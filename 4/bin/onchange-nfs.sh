@@ -4,9 +4,9 @@ if [[ `curl -s ${CONSUL}:8500/v1/health/state/passing | grep nfs`  ]]
 then
   echo "nfs is healthy, mounting uploads directory...."
   NFS=$(curl -s http://${CONSUL}:8500/v1/catalog/service/nfs?passing | jq -r '.[0] | .ServiceAddress')
-  mount -t nfs -v -o nolock,vers=3 ${NFS}:/exports /var/www/html/web/content/uploads
+  mount -t nfs -v -o nolock,vers=3 ${NFS}:/exports /var/www/html/content/uploads
   echo "removing no-uploads.php mu-plugin"
-  rm /var/www/html/web/content/mu-plugins/no-uploads.php
+  rm /var/www/html/content/mu-plugins/no-uploads.php
   # check 'wp core is-installed' here to prevent errors in the log on first run
   # before WP gets installed into the database
   if $(wp --allow-root core is-installed)
@@ -23,9 +23,9 @@ then
   fi
 else
   echo "nfs is not healthly, umounting uploads directory..."
-  umount -f -l /var/www/html/web/content/uploads
+  umount -f -l /var/www/html/content/uploads
   echo "creating mu-plugin for NFS error in wp-admin"
-  cp /var/www/html/web/inactive-plugins/no-uploads.php /var/www/html/web/content/mu-plugins/
+  cp /var/www/html/inactive-plugins/no-uploads.php /var/www/html/content/mu-plugins/
 
   echo "removing 'upload_files' capability from all roles..."
   for role in $(wp --allow-root role list --fields=role --format=csv)
