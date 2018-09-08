@@ -122,9 +122,9 @@ RUN set -ex; \
 	   fi
 
 COPY www /var/www
-
-RUN su-exec anaxexp composer install -d /var/www; \
-    chown -R anaxexp:www-data /var/www/;
+#
+RUN chown -R anaxexp:www-data /var/www/; \
+    su-exec anaxexp composer install -d /var/www;
 # Install HyperDB, https://wordpress.org/plugins/hyperdb
 # Releases at https://wordpress.org/plugins/hyperdb/developers/ , though no SHA1 fingerprints are published
 #ENV HYPERDB_VERSION=1.1
