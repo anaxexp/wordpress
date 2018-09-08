@@ -51,6 +51,7 @@
         },
         "preserve-paths": [
             "html/wp-config.php",
+            "html/windex.php",
             "html/content/uploads"
         ],
         "wordpress-install-dir": "html/wp"
