@@ -66,9 +66,7 @@ RUN set -ex \
 # This includes any themes and/or plugins we've added to the content/themes and content/plugins directories.
 RUN set -ex; \
     mv /usr/local/bin/actions.mk /usr/local/bin/wordpress-php.mk; \
-    #mkdir -p /usr/src/wordpress; \
-    #mkdir -p /usr/src/wordpress/web; \
-    mkdir -p /usr/src/wordpress/web/wp; \
+    mkdir -p /usr/src/wordpress/; \
     \
       chown -R anaxexp:anaxexp /usr/src/wordpress/; \
     \  
@@ -79,8 +77,10 @@ RUN set -ex; \
     su-exec anaxexp tar zxf /tmp/wp.tar.gz --no-same-owner --strip-components=1 -C /usr/src/wordpress; \
     rm -rf /tmp/wp.tar.gz; \
       #su-exec anaxexp mkdir -p web; \
-      su-exec anaxexp mkdir -p content/uploads; \
+      su-exec anaxexp mkdir -p /home/anaxexp/.composer; \
       su-exec anaxexp mkdir -p wp; \
+      su-exec anaxexp mkdir -p content/uploads; \
+     
       #su-exec anaxexp mkdir -p content/cache; \
       #su-exec anaxexp mkdir -p content/languages; \
       su-exec anaxexp mkdir -p content/plugins; \
@@ -89,6 +89,7 @@ RUN set -ex; \
       #su-exec anaxexp cp -R /usr/src/wordpress/wp-content/themes/* /usr/src/wordpress/content/themes/; \
       \   
 	   chown :www-data \
+        /home/anaxexp/.composer \
         wp \
         content/ \
         content/uploads \
@@ -99,6 +100,7 @@ RUN set -ex; \
         #content/mu-plugins; \
     \
 	   chmod 775 \
+           /home/anaxexp/.composer \
            wp \
 	       content/ \
 	       content/uploads \
@@ -119,8 +121,10 @@ RUN set -ex; \
 	       echo "$(cat /etc/sudoers.d/anaxexp), /usr/local/bin/init" > /etc/sudoers.d/anaxexp; \
 	   fi
 
-COPY www /var/www/
-RUN chown -R anaxexp:www-data /var/www/  
+COPY www /var/www
+
+RUN su-exec anaxexp composer install -d /var/www; \
+    chown -R anaxexp:www-data /var/www/;
 # Install HyperDB, https://wordpress.org/plugins/hyperdb
 # Releases at https://wordpress.org/plugins/hyperdb/developers/ , though no SHA1 fingerprints are published
 #ENV HYPERDB_VERSION=1.1
@@ -144,3 +148,6 @@ USER anaxexp
 
 COPY init /docker-entrypoint-init.d/
 COPY bin /usr/local/bin/
+
+# The volume is defined after we install everything
+VOLUME /var/www
