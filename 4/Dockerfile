@@ -62,7 +62,6 @@ RUN set -ex \
     && mv wp-cli.phar /usr/local/bin/wp \
     && wp --info --allow-root
 
-COPY /usr/src/wordpress /usr/src/wordpress
 # Copy the WordPress skeleton from this repo into the container
 # This includes any themes and/or plugins we've added to the content/themes and content/plugins directories.
 RUN set -ex; \
@@ -77,48 +76,51 @@ RUN set -ex; \
 	    wget -O wp.tar.gz "https://wordpress.org/wordpress-${WP_VER}.tar.gz"; \
 	    echo "$WP_SHA1 *wp.tar.gz" | sha1sum -c -; \
 	    echo "$WP_MD5 *wp.tar.gz" | md5sum -c -; \
-    su-exec anaxexp tar zxf /tmp/wp.tar.gz --no-same-owner --strip-components=1 -C /usr/src/wordpress/web/wp; \
+    su-exec anaxexp tar zxf /tmp/wp.tar.gz --no-same-owner --strip-components=1 -C /usr/src/wordpress; \
     rm -rf /tmp/wp.tar.gz; \
-      su-exec anaxexp mkdir -p web; \
-      su-exec anaxexp mkdir -p web/content/uploads; \
+      #su-exec anaxexp mkdir -p web; \
+      su-exec anaxexp mkdir -p content/uploads; \
+      su-exec anaxexp mkdir -p wp; \
       #su-exec anaxexp mkdir -p content/cache; \
       #su-exec anaxexp mkdir -p content/languages; \
-      su-exec anaxexp mkdir -p web/content/plugins; \
+      su-exec anaxexp mkdir -p content/plugins; \
       #su-exec anaxexp mkdir -p content/mu-plugins; \
-      su-exec anaxexp mkdir -p web/content/themes; \
+      su-exec anaxexp mkdir -p content/themes; \
       #su-exec anaxexp cp -R /usr/src/wordpress/wp-content/themes/* /usr/src/wordpress/content/themes/; \
       \   
 	   chown :www-data \
-        web \
-        web/content/ \
-        web/content/uploads \
-        web/content/plugins \
-        web/content/themes; \
+        wp \
+        content/ \
+        content/uploads \
+        content/plugins \
+        content/themes; \
         #content/cache; \
         #content/languages; \
         #content/mu-plugins; \
     \
 	   chmod 775 \
-           web \
-	       web/content/ \
-	       web/content/uploads \
-	       web/content/plugins \
-	       web/content/themes; \
+           wp \
+	       content/ \
+	       content/uploads \
+	       content/plugins \
+	       content/themes; \
            #content/cache; \
            #content/languages; \
            #content/mu-plugins; \
 	   \
-	   find web/content/plugins -type d -exec chown -R :www-data {} \; -exec chmod -R 775 {} \;; \
-	   find web/content/themes -type d -exec chown -R :www-data {} \; -exec chmod -R 775 {} \;; \
+	   find content/plugins -type d -exec chown -R :www-data {} \; -exec chmod -R 775 {} \;; \
+	   find content/themes -type d -exec chown -R :www-data {} \; -exec chmod -R 775 {} \;; \
 	   \
     \
-      cd /usr/src/wordpress/; \
-      su-exec anaxexp composer install; \
+    #  cd /usr/src/wordpress/; \
+    #  su-exec anaxexp composer install; \
     \   
     if [[ -z "${PHP_DEV}" ]]; then \
 	       echo "$(cat /etc/sudoers.d/anaxexp), /usr/local/bin/init" > /etc/sudoers.d/anaxexp; \
 	   fi
-    
+
+COPY www /var/www/
+RUN chown -R anaxexp:www-data /var/www/  
 # Install HyperDB, https://wordpress.org/plugins/hyperdb
 # Releases at https://wordpress.org/plugins/hyperdb/developers/ , though no SHA1 fingerprints are published
 #ENV HYPERDB_VERSION=1.1
@@ -128,13 +130,13 @@ RUN set -ex \
     #&& cd /usr/src \
     && unzip hyperdb.${HYPERDB_VERSION}.zip \
     && chown -R anaxexp:www-data hyperdb \
-    && mv hyperdb/db.php /usr/src/wordpress/web/content/. \
+    && mv hyperdb/db.php content/. \
     && rm -rf hyperdb.${HYPERDB_VERSION}.zip hyperdb \
-    && touch /usr/src/wordpress/web/content/db-config.php
+    && touch content/db-config.php
 
 # Install ztollman's object-cache.php or object caching to memcached
 RUN set -ex \
-    && su-exec anaxexp curl --retry 7 --fail -Ls -o /usr/src/wordpress/web/content/object-cache.php https://raw.githubusercontent.com/tollmanz/wordpress-pecl-memcached-object-cache/master/object-cache.php
+    && su-exec anaxexp curl --retry 7 --fail -Ls -o content/object-cache.php https://raw.githubusercontent.com/tollmanz/wordpress-pecl-memcached-object-cache/master/object-cache.php
 
 
 

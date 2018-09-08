@@ -43,7 +43,7 @@ else
   # update siteurl to work with our directory structure
   # wp option update for siteurl REQUIRES http://, need to determine will we handle that here
   # or ask for it in the _env file or test for it above
-  wp --allow-root option update siteurl `wp --allow-root option get siteurl`/wordpress
+  wp --allow-root option update siteurl `wp --allow-root option get siteurl`/wp
   # set a nice default permalink structure
   wp --allow-root option update permalink_structure '/%year%/%monthnum%/%postname%/'
   # set theme
@@ -59,7 +59,7 @@ else
     curl -OL https://raw.githubusercontent.com/manovotny/wptest/master/wptest.xml
     wp --allow-root import wptest.xml --authors=create
     wp --allow-root plugin uninstall wordpress-importer --deactivate
-    chown -R www-data:www-data /var/www/html/content/uploads/*
+    chown -R anaxexp:www-data /var/www/html/web/content/uploads/*
     rm wptest.xml
   fi
 fi
