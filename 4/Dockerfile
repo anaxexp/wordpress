@@ -25,6 +25,8 @@ USER root
 ENV CONTAINERPILOT_VER 2.7.3
 ENV CONTAINERPILOT file:///etc/containerpilot.json
 
+
+
 RUN set -ex \
     && export CONTAINERPILOT_CHECKSUM=eed3237d11e31d6f903bca58381679f693e21dd2 \
     && curl --retry 7 --fail -Lso /tmp/containerpilot.tar.gz \
@@ -62,109 +64,103 @@ RUN set -ex \
     && mv wp-cli.phar /usr/local/bin/wp \
     && wp --info --allow-root
 
+
 # Copy the WordPress skeleton from this repo into the container
 # This includes any themes and/or plugins we've added to the content/themes and content/plugins directories.
 RUN set -ex; \
     mv /usr/local/bin/actions.mk /usr/local/bin/wordpress-php.mk; \
-    mkdir -p /usr/src/wordpress/; \
-    \
-      chown -R anaxexp:anaxexp /usr/src/wordpress/; \
-    \  
+    mkdir -p /usr/src/wordpress/html/wp/; \
+    mkdir -p /home/anaxexp/.composer/;
+
+COPY www /usr/src/wordpress
+
+RUN set -ex; \ 
+        chown -R anaxexp:anaxexp /usr/src/wordpress/; \
+        chown -R anaxexp:anaxexp /home/anaxexp/.composer; \
 	    cd /tmp; \
 	    wget -O wp.tar.gz "https://wordpress.org/wordpress-${WP_VER}.tar.gz"; \
 	    echo "$WP_SHA1 *wp.tar.gz" | sha1sum -c -; \
 	    echo "$WP_MD5 *wp.tar.gz" | md5sum -c -; \
-    su-exec anaxexp tar zxf /tmp/wp.tar.gz --no-same-owner --strip-components=1 -C /usr/src/wordpress; \
+    su-exec anaxexp tar zxf /tmp/wp.tar.gz --no-same-owner --strip-components=1 -C /usr/src/wordpress/html/wp; \
     rm -rf /tmp/wp.tar.gz; \
-      #su-exec anaxexp mkdir -p web; \
-      su-exec anaxexp mkdir -p /home/anaxexp/.composer; \
-      mkdir -p /var/www/backup; \
-      mkdir -p /var/www/bin; \
-      mkdir -p /var/www/conf; \
-      mkdir -p /var/www/scripts; \
-      chown -R anaxexp:www-data /var/www/backup; \
-      chown -R anaxexp:www-data /var/www/bin; \
-      chown -R anaxexp:www-data /var/www/conf; \
-      chown -R anaxexp:www-data /var/www/scripts; \
-      su-exec anaxexp mkdir -p wp; \
-      su-exec anaxexp mkdir -p content/uploads; \
-      su-exec anaxexp mkdir -p content/cache; \
-      su-exec anaxexp mkdir -p content/languages; \
-      su-exec anaxexp mkdir -p content/plugins; \
-      su-exec anaxexp mkdir -p content/mu-plugins; \
-      su-exec anaxexp mkdir -p content/themes; \
-      #su-exec anaxexp cp -R /usr/src/wordpress/wp-content/themes/* /usr/src/wordpress/content/themes/; \
+    \
+    cd /usr/src/wordpress; \
+    #\
+    #su-exec anaxexp mv /usr/src/wordpress/html/wp/wp-content/themes/* /usr/src/wordpress/html/content/themes/; \
+    #su-exec anaxexp mkdir -p web; \
+    \  
+      #su-exec anaxexp mkdir -p backup; \
+      #/usr/src/wordpress mkdir -p /var/www/bin; \
+      #mkdir -p /usr/src/wordpress/scripts; \
+      su-exec anaxexp mkdir -p vendor; \
+      #mkdir -p /var/www/html/wp; \
+      #chown -R anaxexp:anaxexp /var/www/html/wp; \
+      #chown -R anaxexp:www-data /var/www/backup; \
+      #chown -R anaxexp:www-data /var/www/bin; \
+      #chown -R anaxexp:www-data /var/www/conf; \
+      #chown -R anaxexp:www-data /var/www/scripts; \
+      #su-exec anaxexp mkdir -p wp; \
+      su-exec anaxexp mkdir -p html/content/uploads; \
+      su-exec anaxexp mkdir -p html/content/cache; \
+      su-exec anaxexp mkdir -p html/content/languages; \
+      su-exec anaxexp mkdir -p html/content/plugins; \
+      su-exec anaxexp mkdir -p html/content/mu-plugins; \
+      su-exec anaxexp mkdir -p html/content/themes; \
       \
 	   chown :www-data \
-        /home/anaxexp/.composer \
-        wp \
-        content \
-        content/uploads \
-        content/plugins \
-        content/themes; \
-        #content/cache \
-        #content/languages \
-        #content/mu-plugins; \
-    \
-       chmod 755 \
-           /home/anaxexp/.composer; \
+        #wp \
+        html/ \
+        html/content \
+        html/content/uploads \
+        html/content/plugins \
+        html/content/themes \
+        html/content/cache \
+        html/content/languages \
+        html/content/mu-plugins \
+        vendor; \
     \
 	   chmod 775 \
-           wp \
-	       content/ \
-	       content/uploads \
-	       content/plugins \
-	       content/themes; \
-           #content/cache \
-           #content/languages \
-           #content/mu-plugins; \
+           #wp \
+	       html/content/ \
+	       html/content/uploads \
+	       html/content/plugins \
+	       html/content/themes \
+           html/content/cache \
+           html/content/languages \
+           html/content/mu-plugins \
+           vendor; \
 	   \
-	   find content/plugins -type d -exec chown -R :www-data {} \; -exec chmod -R 775 {} \;; \
-	   find content/themes -type d -exec chown -R :www-data {} \; -exec chmod -R 775 {} \;; \
+	   find html/content/plugins -type d -exec chown -R :www-data {} \; -exec chmod -R 775 {} \;; \
+	   find html/content/themes -type d -exec chown -R :www-data {} \; -exec chmod -R 775 {} \;; \
+       find html/content/mu-plugins -type d -exec chown -R :www-data {} \; -exec chmod -R 775 {} \;; \
+       find vendor -type d -exec chown -R :www-data {} \; -exec chmod -R 775 {} \;; \
 	   \
+       # Install HyperDB, https://wordpress.org/plugins/hyperdb
+       # Releases at https://wordpress.org/plugins/hyperdb/developers/ , though no SHA1 fingerprints are published
+       #ENV HYPERDB_VERSION=1.1
+       export HYPERDB_VERSION=1.1; \
+       curl --retry 7 --fail -Ls -o hyperdb.zip https://downloads.wordpress.org/plugin/hyperdb.${HYPERDB_VERSION}.zip; \
+       unzip hyperdb.zip; \
+       chown -R anaxexp:www-data hyperdb; \
+       mv hyperdb/db.php /usr/src/wordpress/html/content/.; \
+       rm -rf hyperdb.zip hyperdb; \
+       touch /usr/src/wordpress/html/content/db-config.php; \
+       \
+       # Install ztollman's object-cache.php or object caching to memcached
+       curl --retry 7 --fail -Ls -o /usr/src/wordpress/html/content/object-cache.php https://raw.githubusercontent.com/tollmanz/wordpress-pecl-memcached-object-cache/master/object-cache.php; \
+       \
     \  
+    #su-exec anaxexp composer install -d /var/www; \
+    #\
     if [[ -z "${PHP_DEV}" ]]; then \
 	       echo "$(cat /etc/sudoers.d/anaxexp), /usr/local/bin/init" > /etc/sudoers.d/anaxexp; \
 	   fi
-
-COPY www/backup /var/www/backup
-COPY www/bin /var/www/bin
-COPY www/conf /var/www/conf
-COPY www/html /var/www/html
-COPY www/composer.json /var/www/composer.json
-COPY www/local-config-sample.php /var/www/local-config-sample.php
-COPY www/wp-cli.yml /var/www/wp-cli.yml
-COPY www/.env.example /var/www/.env.example
-COPY www/db-config.php.ctmpl /var/www/db-config.php.ctmpl
-COPY www/memcached-config.php.ctmpl /var/www/memcached-config.php.ctmpl
-COPY www/wp-config.php.ctmpl /var/www/wp-config.php.ctmpl
-COPY www/phpcs.xml /var/www/phpcs.xml
-COPY www/scripts /var/www/scripts
-# Install HyperDB, https://wordpress.org/plugins/hyperdb
-# Releases at https://wordpress.org/plugins/hyperdb/developers/ , though no SHA1 fingerprints are published
-#ENV HYPERDB_VERSION=1.1
-RUN set -ex \
-    && export HYPERDB_VERSION=1.1 \
-    && su-exec anaxexp curl --retry 7 --fail -Ls -o /var/www/html/hyperdb.zip https://downloads.wordpress.org/plugin/hyperdb.${HYPERDB_VERSION}.zip \
-    && su-exec anaxexp unzip hyperdb.zip \
-    && su-exec anaxexp chown -R anaxexp:www-data /var/www/html/hyperdb \
-    && mv hyperdb/db.php /var/www/html/content/. \
-    && rm -rf /var/www/html/hyperdb.zip /var/www/html/hyperdb \
-    && touch /var/www/html/content/db-config.php
-
-# Install ztollman's object-cache.php or object caching to memcached
-RUN set -ex \
-    && curl --retry 7 --fail -Ls -o /var/www/html/content/object-cache.php https://raw.githubusercontent.com/tollmanz/wordpress-pecl-memcached-object-cache/master/object-cache.php
-
-
-#
-#RUN chown -R anaxexp:www-data /var/www/; \
-#    su-exec anaxexp composer install -d /var/www;
 
 USER anaxexp
 
 COPY init /docker-entrypoint-init.d/
 COPY bin /usr/local/bin/
 
+#RUN su-exec anaxexp composer install -d /var/www;
 # The volume is defined after we install everything
-#VOLUME /var/www
+#VOLUME /var/www/html
