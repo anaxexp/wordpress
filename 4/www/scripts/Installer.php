@@ -21,7 +21,7 @@ class Installer
         /** @var UpdateOperation $operation */
         $operation = $event->getOperation();
 
-        if ($operation->getInitialPackage()->getName() === 'johnpbloch/wordpress') {
+        if ($operation->getInitialPackage()->getName() === 'johnpbloch/wordpress-core') {
             self::initWordPress($event);
         }
     }
