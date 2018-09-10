@@ -116,8 +116,8 @@ RUN set -ex; \
         html/content/themes \
         html/content/cache \
         html/content/languages \
-        html/content/mu-plugins \
-        vendor; \
+        html/content/mu-plugins; \
+        #vendor; \
     \
 	   chmod 775 \
            #wp \
@@ -127,13 +127,13 @@ RUN set -ex; \
 	       html/content/themes \
            html/content/cache \
            html/content/languages \
-           html/content/mu-plugins \
-           vendor; \
+           html/content/mu-plugins; \
+           #vendor; \
 	   \
 	   find html/content/plugins -type d -exec chown -R :www-data {} \; -exec chmod -R 775 {} \;; \
 	   find html/content/themes -type d -exec chown -R :www-data {} \; -exec chmod -R 775 {} \;; \
        find html/content/mu-plugins -type d -exec chown -R :www-data {} \; -exec chmod -R 775 {} \;; \
-       find vendor -type d -exec chown -R :www-data {} \; -exec chmod -R 775 {} \;; \
+       #find vendor -type d -exec chown -R :www-data {} \; -exec chmod -R 775 {} \;; \
 	   \
        # Install HyperDB, https://wordpress.org/plugins/hyperdb
        # Releases at https://wordpress.org/plugins/hyperdb/developers/ , though no SHA1 fingerprints are published
@@ -150,17 +150,19 @@ RUN set -ex; \
        curl --retry 7 --fail -Ls -o /usr/src/wordpress/html/content/object-cache.php https://raw.githubusercontent.com/tollmanz/wordpress-pecl-memcached-object-cache/master/object-cache.php; \
        \
     \  
-    #su-exec anaxexp composer install -d /var/www; \
-    #\
+    su-exec anaxexp composer install -d /usr/src/wordpress; \
+    \
     if [[ -z "${PHP_DEV}" ]]; then \
 	       echo "$(cat /etc/sudoers.d/anaxexp), /usr/local/bin/init" > /etc/sudoers.d/anaxexp; \
 	   fi
+
+
 
 USER anaxexp
 
 COPY init /docker-entrypoint-init.d/
 COPY bin /usr/local/bin/
 
-#RUN su-exec anaxexp composer install -d /var/www;
+#RUN su-exec anaxexp composer install -d /usr/src/wordpress;
 # The volume is defined after we install everything
 #VOLUME /var/www/html
