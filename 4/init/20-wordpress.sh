@@ -20,8 +20,8 @@ _gotpl() {
 echo "Removing: generic environment config from anaxexp/php"
 rm -f "${CONF_DIR}/anaxexp.settings.php"
 
-if [[ -n "${ANAXEXP_APP_NAME}" && -n "${WP_VERSION}" ]]; then
+if [[ -n "${ANAXEXP_APP_NAME}" && -n "${WORDPRESS_VERSION}" ]]; then
     echo "Generating: configuration from our templates"
-    _gotpl "anaxexp.wp${WP_VERSION}-config.php.tmpl" "${CONF_DIR}/anaxexp.wp-config.php"
+    _gotpl "anaxexp.wp${WORDPRESS_VERSION}-config.php.tmpl" "${CONF_DIR}/anaxexp.wp-config.php"
     _gotpl "wp-config.php.tmpl" "${CONF_DIR}/wp-config.php"
 fi
