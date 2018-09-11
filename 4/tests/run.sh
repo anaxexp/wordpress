@@ -7,7 +7,7 @@ if [[ -n "${DEBUG}" ]]; then
 fi
 
 cid="$(
-	docker run -d -e WP_VERSION=4 "${IMAGE}"
+	docker run -d -e WP_VERSION=4 -e DEBUG=1 "${IMAGE}"
 )"
 trap "docker rm -vf ${cid} > /dev/null" EXIT
 

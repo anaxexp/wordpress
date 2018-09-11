@@ -8,8 +8,7 @@ MAKEFLAGS += --warn-undefined-variables
 GIT_COMMIT ?= $(shell git rev-parse --short HEAD)
 GIT_BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD)
 WORKSPACE ?= $(shell pwd)
-APP_ROOT ?= /var/www/html
-WP_CLI_CONFIG_PATH ?= /usr/src/wordpress/wp-cli.yml
+
 namespace ?= anaxexp
 tag := branch-$(shell basename $(GIT_BRANCH))
 
@@ -18,20 +17,19 @@ dockerLocal := docker
 #composeLocal := DOCKER_HOST= DOCKER_TLS_VERIFY= DOCKER_CERT_PATH= docker-compose
 composeLocal := docker-compose
 
-WP_VER ?= 4.9.8
-WP_SHA1 ?= 0945bab959cba127531dceb2c4fed81770812b4f
-WP_MD5 ?= c4e7d68b5c382fbbaf547f2b2d42c198
+WORDPRESS_VER ?= 4.9.8
+WORDPRESS_SHA1 ?= 0945bab959cba127531dceb2c4fed81770812b4f
+WORDPRESS_MD5 ?= c4e7d68b5c382fbbaf547f2b2d42c198
 
-WP_VER_MAJOR ?= $(shell echo "${WP_VER}" | grep -oE '^[0-9]+')
-HYPERDB_VERSION ?= 1.1
+WORDPRESS_VER_MAJOR ?= $(shell echo "${WORDPRESS_VER}" | grep -oE '^[0-9]+')
 
 PHP_VER ?= 7.2
 BASE_IMAGE_TAG = $(PHP_VER)
 
 REPO := $(namespace)/wordpress
-NAME = wordpress-$(WP_VER_MAJOR)-$(PHP_VER)
+NAME = wordpress-$(WORDPRESS_VER_MAJOR)-$(PHP_VER)
 
-TAG ?= $(WP_VER_MAJOR)-$(PHP_VER)
+TAG ?= $(WORDPRESS_VER_MAJOR)-$(PHP_VER)
 
 ifneq ($(BASE_IMAGE_STABILITY_TAG),)
     BASE_IMAGE_TAG := $(BASE_IMAGE_TAG)-$(BASE_IMAGE_STABILITY_TAG)
@@ -51,11 +49,9 @@ help:
 build:
 	$(dockerLocal) build -t=$(REPO):$(TAG) \
 		--build-arg BASE_IMAGE_TAG=$(BASE_IMAGE_TAG) \
-		--build-arg WP_VER=$(WP_VER) \
-		--build-arg WP_SHA1=$(WP_SHA1) \
-		--build-arg WP_MD5=$(WP_MD5) \
-		--build-arg WP_CLI_CONFIG_PATH=$(WP_CLI_CONFIG_PATH) \
-		--build-arg HYPERDB_VERSION=$(HYPERDB_VERSION) \
+		--build-arg WORDPRESS_VER=$(WORDPRESS_VER) \
+		--build-arg WORDPRESS_SHA1=$(WORDPRESS_SHA1) \
+		--build-arg WORDPRESS_MD5=$(WORDPRESS_MD5) \
 		./
 
 test:
@@ -93,7 +89,7 @@ clean:
 	-$(dockerLocal) rm -f $(NAME)
 
 check-configs:
-	./check-configs.sh $(WP_VER)
+	./check-configs.sh $(WORDPRESS_VER)
 
 release: build push
 
@@ -107,7 +103,6 @@ pull:
 ## Print environment for build debugging
 debug:
 	@echo WORKSPACE=$(WORKSPACE)
-	@echo APP_ROOT=$(APP_ROOT)
 	@echo GIT_COMMIT=$(GIT_COMMIT)
 	@echo GIT_BRANCH=$(GIT_BRANCH)
 	@echo namespace=$(namespace)
@@ -115,10 +110,10 @@ debug:
 	@echo TAG=$(TAG)
 	@echo NAME=$(NAME)
 	@echo PHP_VER=$(PHP_VER)
-	@echo WP_VER=$(WP_VER)
-	@echo WP_VER_MAJOR=$(WP_VER_MAJOR)
-	@echo WP_SHA1=$(WP_SHA1)
-	@echo WP_MD5=$(WP_MD5)
+	@echo WORDPRESS_VER=$(WP_VER)
+	@echo WORDPRESS_VER_MAJOR=$(WP_VER_MAJOR)
+	@echo WORDPRESS_SHA1=$(WP_SHA1)
+	@echo WORDPRESS_MD5=$(WP_MD5)
 
 # -------------------------------------------------------
 # helper functions for testing if variables are defined
