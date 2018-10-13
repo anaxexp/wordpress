@@ -1,0 +1,25 @@
+stages:
+- name: compose install
+  steps:
+  - runScriptConfig:
+      image: anaxexp/wordpress-php:4-7.2-4.5.0
+      shellScript: |-
+        apt-get update
+        apt-get install -y --no-install-recommends git zip libsqlite3-dev zlib1g-dev
+        docker-php-ext-install zip
+        git clone https://github.com/anaxexp/wordpress-compose.git .
+        curl --silent --show-error https://getcomposer.org/installer | php
+        ./composer.phar install -n --prefer-dist
+        cp .env.testing .env
+- name: Publish Image
+  steps:
+  - publishImageConfig:
+      dockerfilePath: ./4/Dockerfile
+      buildContext: .
+      tag: wordpress-compose-example
+      registry: 127.0.0.1:34561
+- name: Deploy
+  steps:
+  - applyYamlConfig:
+      path: ./deploy/deployment.yaml
+timeout: 60
