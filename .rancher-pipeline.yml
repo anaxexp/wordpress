@@ -16,7 +16,7 @@ stages:
   - publishImageConfig:
       dockerfilePath: ./4/Dockerfile
       buildContext: .
-      tag: wordpress-compose-example
+      tag: wordpress-example-compose
       registry: 127.0.0.1:34561
 - name: Deploy
   steps:
