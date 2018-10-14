@@ -2,7 +2,7 @@ stages:
 - name: compose install
   steps:
   - runScriptConfig:
-      image: anaxexp/wordpress-php:4-7.2-4.5.0
+      image: anaxexp/wordpress-php:7.1-4.5.0
       shellScript: |-
         apt-get update
         apt-get install -y --no-install-recommends git zip libsqlite3-dev zlib1g-dev
